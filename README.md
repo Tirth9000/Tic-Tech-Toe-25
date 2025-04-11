@@ -1,3 +1,6 @@
 # Tic-Tech-Toe-25
 
-Contributor umar
+Contributors: 
+Tirth
+umar
+
