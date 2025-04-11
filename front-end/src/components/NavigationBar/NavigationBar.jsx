@@ -9,7 +9,7 @@ export default function NavigationBar() {
 	return (
 		<div class="flex p-2 w-full">
 			<NavigationMenu>
-				<NavigationMenuTrigger as="A" href="/account" class='bg-red' >
+				<NavigationMenuTrigger as="A" href="/" class='bg-red' >
 					Dashboard
 				</NavigationMenuTrigger>
 			</NavigationMenu>
