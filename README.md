@@ -1,6 +1,6 @@
 # Tic-Tech-Toe-25
 
-Contributors: 
-Tirth
+Contributors:
+Tirth09
 umar
 Pratik Rathod
