@@ -1,0 +1,6 @@
+.navigation-active{
+    background-color: white !important;
+}
+.navigation-inactive{
+    background-color: red !important;
+}
