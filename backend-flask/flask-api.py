@@ -20,8 +20,8 @@ CORS(app)
 # }
 
 client = MongoClient("mongodb://host.docker.internal:27018/")
-db = client["test"]
-collection = db["test_db"]
+db = client["predictive_analysis"]
+collection = db["sensors"]
 
 
 def execute_query(query=None, projection=None):

@@ -5,9 +5,12 @@ const express = require('express');
 const http = require('node:http');
 const { Server } = require('socket.io');
 const connectDB = require('./database/db.connection');
+const { pushDataEventHandler, predictFailureRate, askAI, addSensor } = require('./controllers/sensor.controller');
+
 
 // Create Express app
 const app = express();
+
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
@@ -32,6 +35,11 @@ io.on('connection', (socket) => {
     console.log('Received message:', data);
     socket.broadcast.emit('message', data);
   });
+  // SETTING UP ALL THE HANDLERS FOR THE SENSOR MODULES
+  socket.on('sensor_push',(data)=>pushDataEventHandler(socket, data));
+  socket.on('sensor_predict_failure_rate',(data)=>predictFailureRate(socket, data));
+  socket.on('ask_ai',(data)=>askAI(socket, data));
+  socket.on('add_sensor', (data)=>addSensor(socket,data))
 
   socket.on('disconnect', () => {
     console.log('User disconnected:', socket.id);
