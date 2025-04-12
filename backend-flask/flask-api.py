@@ -66,6 +66,11 @@ def SayHello():
 #     session['file_address'] = query_data[0]["file"]
 #     return json.dumps({'message': "session stored successfully!", "status": 200})
 
+# the following is an example 
+# i want you to convert it as per my use case :
+#   take id and message from this req, 
+#   find a document form data base using id
+#   take that json data and message and return response
 # @app.route('/chat-response', methods=['GET', 'POST'])
 # def ChatResponse():
 #     file_address = session.get('file_address')

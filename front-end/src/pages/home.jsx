@@ -1,4 +1,4 @@
-import { createEffect, createSignal, on, onMount, Show } from "solid-js";
+import { createEffect, createResource, createSignal, on, onMount, Show } from "solid-js";
 import { Portal } from "solid-js/web";
 import { IconPlus } from "~/components/icons";
 import {
@@ -9,6 +9,7 @@ import {
 } from "~/components/ui/card";
 import { LineChart } from "~/components/ui/charts";
 import { addReadingsAsync } from "~/utils/dummyData";
+import { useIO } from "~/utils/socket.utils";
 
 export const HomeComponent = () => {
 	const [temperatureData, setTemperatureData] = createSignal([24]);
@@ -20,46 +21,45 @@ export const HomeComponent = () => {
 	onMount(() => {
 		addReadingsAsync(
 			(val) =>
-				setTemperatureData((curr) =>{
-					if(curr.length<10){
-						curr.push(val)
-						return curr
+				setTemperatureData((curr) => {
+					if (curr.length < 10) {
+						curr.push(val);
+						return curr;
 					}
-					const last9 = curr.slice(-9)
-					last9.push(val)
-					return last9
+					const last9 = curr.slice(-9);
+					last9.push(val);
+					return last9;
 				}),
 			42,
-			44
+			44,
 		);
 		addReadingsAsync(
 			(val) =>
-				setVibrationData((curr) =>{	
-					if(curr.length<10){
-						curr.push(val)
-						return curr
+				setVibrationData((curr) => {
+					if (curr.length < 10) {
+						curr.push(val);
+						return curr;
 					}
-					const last9 = curr.slice(-9)
-					last9.push(val)
-					return last9
+					const last9 = curr.slice(-9);
+					last9.push(val);
+					return last9;
 				}),
 			42.1,
-			45.2
+			45.2,
 		);
 		addReadingsAsync(
 			(val) =>
-				setVoltageData((curr) =>{
-					
-					if(curr.length<10){
-						curr.push(val)
-						return curr
+				setVoltageData((curr) => {
+					if (curr.length < 10) {
+						curr.push(val);
+						return curr;
 					}
-					const last9 = curr.slice(-9)
-					last9.push(val)
-					return last9
+					const last9 = curr.slice(-9);
+					last9.push(val);
+					return last9;
 				}),
 			4.98,
-			5.12
+			5.12,
 		);
 	});
 
@@ -151,6 +151,82 @@ const SensorCard = (props) => {
 		});
 	});
 
+	const SensorChartPopup = () => {
+		
+		const getPrediction = async (sensor_id)=>{
+			return new Promise((resolve, reject)=>{
+				useIO()?.on("predict_failure_result",(data)=>{
+
+					return resolve( data?.probable.at(0) ? `${Number.parseFloat(data?.probable.at(0)).toFixed(3)*100}` : "-")
+				})
+				useIO()?.on("predict_failure_error",()=>{
+					return resolve("-")
+				})
+				useIO()?.emit("sensor_predict_failure_rate", {id:sensor_id, values:props.datasets})
+			})
+		}
+		const [failureRate, { refetch}] = createResource(getPrediction)
+
+		setInterval(()=>refetch(), 10000)
+
+
+		return <Card
+			ref={modalRef}
+			class="absolute backdrop:bg-opacity-35"
+			style={{
+				opacity: show() ? "1" : "0",
+				"z-index": show() ? "1" : "-1",
+				"user-select": show() ? "inherit" : "true",
+				height : '500px',
+				width : '500px',
+				right : "100px",
+				left : "100px",
+				top: show() ? "20px" : "0px",
+				transition: "all 500ms 1ms ease-in-out",
+			}}
+		>
+			<CardTitle class="p-2 uppercase"> {props.title}</CardTitle>
+			<CardContent>
+				<LineChart
+					data={{
+						labels: [
+							...Array.from({ length: 10 }, (v, i) =>
+								new Date(Date.now() - i * 1000).toLocaleTimeString(),
+							).reverse(),
+						],
+						datasets: [
+							{
+								label: props.unit,
+								data: props.datasets,
+							},
+						],
+					}}
+					options={{
+						animation: false, // 👈 this disables animations
+						responsive: true,
+						plugins: {
+							legend: {
+								display: false,
+							},
+						},
+						scales: {
+							x: {
+								display: true,
+							},
+							y: {
+								display: true,
+							},
+						},
+					}}
+				/>
+			</CardContent>
+			<CardDescription>
+				🔴 probability of failure {"(in next 10 readings...)"}: { failureRate.loading ? "loading.." : failureRate() } %
+				<br />
+			</CardDescription>
+		</Card>;
+	};
+
 	return (
 		<Card
 			ref={cardRef}
@@ -169,54 +245,7 @@ const SensorCard = (props) => {
 				Last updated at : {props.lastUpdate}{" "}
 			</CardDescription>
 			<Portal>
-				<Card
-					ref={modalRef}
-					class="absolute backdrop:bg-opacity-35"
-					style={{
-						opacity: show() ? "1" : "0",
-						"z-index": show() ? "1" : "-1",
-						"user-select": show() ? "inherit" : "true",
-						inset: "20vw",
-						top: show() ? "20px" : "0px",
-						transition: "all 500ms 1ms ease-in-out",
-					}}
-				>
-					<CardTitle class="p-2 uppercase"> {props.title}</CardTitle>
-					<CardContent>
-						<LineChart
-							data={{
-								labels: [
-									...Array.from({ length: 10 }, (v, i) =>
-										new Date(Date.now() - i * 1000).toLocaleTimeString(),
-									).reverse(),
-								],
-								datasets: [
-									{
-										label: props.unit,
-										data: props.datasets,
-									},
-								],
-							}}
-							options={{
-								animation: false, // 👈 this disables animations
-								responsive: true,
-								plugins: {
-									legend: {
-										display: false,
-									},
-								},
-								scales: {
-									x: {
-										display: true,
-									},
-									y: {
-										display: true,
-									},
-								},
-							}}
-						/>
-					</CardContent>
-				</Card>
+				<SensorChartPopup/>
 			</Portal>
 		</Card>
 	);
