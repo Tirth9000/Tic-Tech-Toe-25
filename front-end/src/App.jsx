@@ -6,6 +6,8 @@ import {
 } from "@kobalte/core";
 import { Route, Router } from "@solidjs/router";
 import NavigationBar from "./components/NavigationBar/NavigationBar";
+import { ModelPage } from "./pages/model";
+import { HomeComponent } from "./pages/home";
 // import { Authentication } from "./components/Authentication/index";
 function Home(){
 	return (
@@ -20,10 +22,14 @@ function App() {
 			<ColorModeProvider storageManager={storageManager}>
 				<NavigationBar />
 				<Router>
-					<Route path="/" component={Home} />
+					<Route path="/" component={ModelPage} />
+					<Route path="/dashboard" component={HomeComponent} />
 				</Router>
 			</ColorModeProvider>
 		</>
 	);
 }
 export default App;
+
+
+// socket io event "sensor data" that saves data  to the sensorData model
