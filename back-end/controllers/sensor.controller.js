@@ -103,6 +103,10 @@ const askAI = async (socket, data) => {
   }
 };
 
+const getSensors = async (socket, data)=>{
+    
+}
+
 
 module.exports = {
   pushDataEventHandler,

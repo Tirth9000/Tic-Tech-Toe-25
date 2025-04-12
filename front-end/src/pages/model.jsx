@@ -21,23 +21,22 @@ export const ModelPage = () => {
 				<Col span={1} spanMd={1}>
 					<Card>
 						<CardHeader>
-                            
-							<CardTitle>Model Version</CardTitle>
+							<CardTitle>🤖 Model Version </CardTitle>
 						</CardHeader>
-						<CardContent>0.0.1 </CardContent>
+						<CardContent>0.0.1 rev7.0</CardContent>
 					</Card>
 				</Col>
 				<Card>
 					<CardHeader>
-						<CardTitle>Size</CardTitle>
+						<CardTitle>Size 💼</CardTitle>
 					</CardHeader>
-					<CardContent>XXX</CardContent>
+					<CardContent> ~50MB</CardContent>
 				</Card>
 				<Card>
 					<CardHeader>
-						<CardTitle>Accuracy</CardTitle>
+						<CardTitle>Accuracy 📈</CardTitle>
 					</CardHeader>
-					<CardContent>XX %</CardContent>
+					<CardContent>85 %</CardContent>
 				</Card>
 			</Grid>
 		</Show>
