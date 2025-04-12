@@ -1,4 +1,4 @@
-from flask import Flask, Response, request, session
+from flask import Flask, request, session
 from http import HTTPStatus
 from flask_cors import CORS
 import pandas as pd, json
@@ -22,6 +22,7 @@ CORS(app)
 client = MongoClient("mongodb://host.docker.internal:27018/")
 db = client["test"]
 collection = db["test_db"]
+
 
 def execute_query(query=None, projection=None):
     query = query or {}
