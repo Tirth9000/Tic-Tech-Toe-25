@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  flask:
+    build: ./backend-flask
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./flask-app:/app
+    # restart: unless-stopped
+
+  node:
+    build: ./back-end
+    ports:
+      - "5600:5600"
+    volumes:
+      - ./node-app:/usr/src/app
+    # restart: unless-stopped
+
+  solid:
+    build: ./front-end
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./solid-app:/app
+    # restart: unless-stopped
