@@ -19,9 +19,11 @@
   },
   "dependencies": {
     "@corvu/otp-field": "^0.1.4",
-    "@kobalte/core": "^0.13.7",
+    "@kobalte/core": "^0.13.9",
     "@modular-forms/solid": "^0.25.0",
+    "@solid-primitives/refs": "^1.1.0",
     "@solidjs/router": "^0.15.2",
+    "chart.js": "^4.4.8",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "socket.io-client": "^4.8.1",
