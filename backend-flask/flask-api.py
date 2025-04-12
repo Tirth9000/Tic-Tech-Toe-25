@@ -19,9 +19,10 @@ CORS(app)
 #     500: 'Internal Server Error',
 # }
 
-client = MongoClient("mongodb://localhost:27017/")
-# db = client[""]
-# collection = db[""]
+client = MongoClient("mongodb://host.docker.internal:27018/")
+db = client["test"]
+collection = db["test_db"]
+
 
 def execute_query(query=None, projection=None):
     query = query or {}
@@ -53,6 +54,10 @@ def PredictFailure():
     y_prob = clf.predict_proba(x.reshape(1,-1))
     return json.dumps({"probable": y_prob[0].tolist(), "predict": int(y_pred[0]), "status": HTTPStatus.OK})
 
+@app.route('/api/hello_world', methods=["GET"])
+def SayHello():
+    return "Hello world"
+
 
 # @app.route('/upload-file', methods=['GET', 'POST'])
 # def FileLoader(): 
@@ -75,5 +80,6 @@ def PredictFailure():
     
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    # app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000)
     
