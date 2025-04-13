@@ -1,4 +1,5 @@
 import { createEffect, createResource, createSignal, on, onMount, Show } from "solid-js";
+import { createEffect, createResource, createSignal, on, onMount, Show } from "solid-js";
 import { Portal } from "solid-js/web";
 import { IconPlus } from "~/components/icons";
 import {
@@ -31,8 +32,7 @@ export const HomeComponent = () => {
 					return last9;
 				}),
 			42,
-			44,
-			0.7
+			44
 		);
 		addReadingsAsync(
 			(val) =>
@@ -133,84 +133,93 @@ const SystemStatsCard = (props) => {
 };
 
 const SensorCard = (props) => {
-	const SensorChartPopup = () => {
-		
-		const getPrediction = async (sensor_id)=>{
-			return new Promise((resolve, _reject)=>{
-				useIO()?.on("predict_failure_result",(data)=>{
-					// console.log(props.datasets)
-					console.log(data)
-					return resolve( data?.data?.probable.at(1) ? `${Number.parseFloat(data?.data?.probable.at(1)).toFixed(4)*100}` : "-")
-				})
-				useIO()?.on("predict_failure_error",()=>{
-					return resolve("-")
-				})
-				// setTimeout(()=>	resolve("-"), 2500)
-				console.log(props.datasets)
-				useIO()?.emit("sensor_predict_failure_rate", {id:sensor_id, values:props.datasets})
-			})
-		}
-		const [failureRate, { refetch}] = createResource(getPrediction)
+	const [show, setShow] = createSignal(false);
+	let modalRef;
+	let cardRef;
 
-		setInterval(()=>refetch(), 5000)
-
-		return <Card class="h-[60%]">	
-			<CardTitle class="p-2 uppercase"> {props.title}</CardTitle>
-			<CardContent>
-				<LineChart
-					data={{
-						labels: [
-							...Array.from({ length: 14 }, (v, i) =>
-								new Date(Date.now() - i * 1000).toLocaleTimeString(),
-							).reverse(),
-						],
-						datasets: [
-							{
-								label: props.unit,
-								data: props.datasets,
-							},
-						],
-					}}
-					options={{
-						animation: false, // 👈 this disables animations
-						responsive: true,
-						plugins: {
-							legend: {
-								display: false,
-							},
-						},
-						scales: {
-							x: {
-								display: true,
-							},
-							y: {
-								display: true,
-							},
-						},
-					}}
-				/>
-			</CardContent>
-			<CardDescription class='text-lg'>
-				{ failureRate() < 80 ? '🟢' : '🔴' } probability of failure {"(in next 10 readings...)"}: { failureRate.loading ? "loading.." : failureRate() } %
-				<br />
-			</CardDescription>
-		</Card>;
+	const popUpModal = () => {
+		setShow(true);
+		console.log("open");
 	};
+
+	onMount(() => {
+		document.addEventListener("click", (e) => {
+			console.log(cardRef?.contains(e.target) || e.target === cardRef);
+
+			if (cardRef?.contains(e.target) || e.target === cardRef)
+				return setShow(true);
+
+			return setShow(false);
+		});
+	});
 
 	return (
 		<Card
-			class="p-2 transition-transform ease-in"
+			ref={cardRef}
+			class="p-2 hover:scale-105 transition-transform ease-in"
 			style={{
 				"border-left":
 					props.status === "NORMAL" ? "rgba(0,220,0, 0.5) 5px solid" : "",
 			}}
+			onClick={() => popUpModal()}
 		>
+			<CardTitle class="">{props.title}</CardTitle>
 			<CardContent class="my-4 p-2 text-2xl">
-				<SensorChartPopup/>
+				{props.value} <span class="text-s">{props.unit}</span>
 			</CardContent>
 			<CardDescription class="text-xs">
 				Last updated at : {props.lastUpdate}{" "}
 			</CardDescription>
+			<Portal>
+				<Card
+					ref={modalRef}
+					class="absolute backdrop:bg-opacity-35"
+					style={{
+						opacity: show() ? "1" : "0",
+						"z-index": show() ? "1" : "-1",
+						"user-select": show() ? "inherit" : "true",
+						inset: "20vw",
+						top: show() ? "20px" : "0px",
+						transition: "all 500ms 1ms ease-in-out",
+					}}
+				>
+					<CardTitle class="p-2 uppercase"> {props.title}</CardTitle>
+					<CardContent>
+						<LineChart
+							data={{
+								labels: [
+									...Array.from({ length: 10 }, (v, i) =>
+										new Date(Date.now() - i * 1000).toLocaleTimeString(),
+									).reverse(),
+								],
+								datasets: [
+									{
+										label: props.unit,
+										data: props.datasets,
+									},
+								],
+							}}
+							options={{
+								animation: false, // 👈 this disables animations
+								responsive: true,
+								plugins: {
+									legend: {
+										display: false,
+									},
+								},
+								scales: {
+									x: {
+										display: true,
+									},
+									y: {
+										display: true,
+									},
+								},
+							}}
+						/>
+					</CardContent>
+				</Card>
+			</Portal>
 		</Card>
 	);
 };
