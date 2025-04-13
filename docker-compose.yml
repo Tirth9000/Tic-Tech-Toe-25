@@ -8,4 +8,4 @@ services:
       - "8080:5000"
     volumes:
       - ./backend-flask:/app
-    # restart: unless-stopped
+    restart: unless-stopped

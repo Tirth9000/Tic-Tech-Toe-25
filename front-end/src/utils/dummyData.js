@@ -5,7 +5,7 @@ const getDummyReadings = (min, max, outlierProb = 0.01, outlierPeakDiff = max ) 
          values : Array.from({ length: 100 }, () =>{ 
             const random = Math.random()* (max-min) + min
 
-            const randomOutLierDelta = Math.random() >= 1-outlierProb ? Math.random()*max + outlierPeakDiff : 0 
+            const randomOutLierDelta = Math.random() >= 1-outlierProb ? Math.random()*(-max) + outlierPeakDiff : 0 
             return (random+randomOutLierDelta).toFixed(2) 
         })
     }   

@@ -37,14 +37,22 @@ const predictFailureRate = async (socket, data) => {
         data: values
       })
     });
-
+    const res2 = await fetch("http://localhost:8080/api/data_trends", {
+      method:'POST',
+      headers : {"Content-Type":"application/json"},
+      body: JSON.stringify({
+        data: values
+      })
+    })
     if (!res.ok) {
       throw new Error("Failed to get prediction");
     }
-
+    if(!res2.ok){
+      throw new Error("Failed to get trends");
+    }
     const body = await res.json();
-
-    socket.emit("predict_failure_result", { message: "success", status: true, data: body });
+    const trends = await res2.json()
+    socket.emit("predict_failure_result", { message: "success", status: true,data: body, trends });
 
   } catch (error) {
     console.error(error);
@@ -104,7 +112,7 @@ const askAI = async (socket, data) => {
 };
 
 const getSensors = async (socket, data)=>{
-    
+
 }
 
 

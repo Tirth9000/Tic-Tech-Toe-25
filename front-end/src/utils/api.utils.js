@@ -14,7 +14,7 @@ const getAllSensorData = async ()=>{
     }
 }
 
-const handlePushDataToSensor = async (reslove                   )=>{
+const handlePushDataToSensor = async (resolve)=>{
     useIO()?.on('data_reading_success', resolve)
     useIO()?.on('data_reading_error', reject)
     useIO()?.emit("all-bookings", {})

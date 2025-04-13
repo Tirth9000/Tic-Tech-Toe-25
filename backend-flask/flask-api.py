@@ -30,15 +30,17 @@ def execute_query(query=None, projection=None):
     return result
 
 
-data = []
+# data = []
 @app.route('/api/data_trends', methods=["POST", "GET"])
 def DataTrends():
     try:
         response = request.get_json()
-        data.extend(response['data'])
-        df = pd.DataFrame(data)
+        # data.extend(response['data'])
+        df = pd.DataFrame(response['data'])
+        print(df)
         trends = json.loads(df.describe().to_json())
-        return json.dumps({'trends_data': trends, "data": data, "status": HTTPStatus.OK})
+        
+        return json.dumps({'trends_data': trends, "data": response['data'], "status": HTTPStatus.OK})
     except Exception as e:
         return json.dumps({'message': str(e), 'status': HTTPStatus.NOT_FOUND})
 
@@ -46,10 +48,9 @@ def DataTrends():
 @app.route('/api/predict_fail', methods=["POST", "GET"])
 def PredictFailure():
     response = request.get_json()
+    print(response)
     clf = joblib.load('new_random_forest_fault_detector.pkl')
     x = np.array(response["data"])
-    print(x)
-    print(type(x))
     y_pred = clf.predict(x.reshape(1,-1))
     y_prob = clf.predict_proba(x.reshape(1,-1))
     return json.dumps({"probable": y_prob[0].tolist(), "predict": int(y_pred[0]), "status": HTTPStatus.OK})

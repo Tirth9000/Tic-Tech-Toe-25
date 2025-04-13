@@ -7,14 +7,14 @@ import {
 	CardDescription,
 	CardTitle,
 } from "~/components/ui/card";
-import { LineChart } from "~/components/ui/charts";
+import { LineChart, BarChart } from "~/components/ui/charts";
 import { addReadingsAsync } from "~/utils/dummyData";
 import { useIO } from "~/utils/socket.utils";
 
 export const HomeComponent = () => {
-	const [temperatureData, setTemperatureData] = createSignal([24]);
-	const [vibrationData, setVibrationData] = createSignal([50]);
-	const [voltageData, setVoltageData] = createSignal([5.0]);
+	const [temperatureData, setTemperatureData] = createSignal([24,23,24,21,24,21,24,24,21,24]);
+	const [vibrationData, setVibrationData] = createSignal([50,50,50,50,50,50,50,50,50,50]);
+	const [voltageData, setVoltageData] = createSignal([5.0,5.0,5.0,5.0,5.0,5.0,5.0,5.0,5.0,5.0]);
 	const [lastUpdate, setLastUpdate] = createSignal(
 		new Date().toLocaleTimeString(),
 	);
@@ -32,6 +32,7 @@ export const HomeComponent = () => {
 				}),
 			42,
 			44,
+			0.7
 		);
 		addReadingsAsync(
 			(val) =>
@@ -76,7 +77,7 @@ export const HomeComponent = () => {
 			<h4 class="text-gray-300 text-sm">
 				Monitor your system health and statuses
 			</h4>
-			<div class="flex gap-2 my-3 w-full">
+			<div class="flex flex-wrap w-full">
 				<SystemStatsCard description="System Health" value="GOOD" />
 				<SystemStatsCard description="Active Sensors" value="3" />
 				<SystemStatsCard description="Anomalies" value="1" />
@@ -89,51 +90,9 @@ export const HomeComponent = () => {
 						<IconPlus class="rounded-full size-6" />
 					</CardContent>
 				</Card>
-
-				<LineChart
-					data={{
-						labels: [
-							...Array.from({ length: 14 }, (v, i) =>
-								new Date(Date.now() - i * 1000).toLocaleTimeString(),
-							).reverse(),
-						],
-						datasets: [
-							{
-								label: "Vibration (Hz)",
-								data: vibrationData(),
-							},
-							{
-								label: "",
-								data: props.datasets,
-							},
-							{
-								label: props.unit,
-								data: props.datasets,
-							},
-						],
-					}}
-					options={{
-						animation: false, // 👈 this disables animations
-						responsive: true,
-						plugins: {
-							legend: {
-								display: false,
-							},
-						},
-						scales: {
-							x: {
-								display: true,
-							},
-							y: {
-								display: true,
-							},
-						},
-					}}
-				/>
-
 			</div>
 			<div>Sensors</div>
-			<div class="gap-2 grid grid-cols-4">
+			<div class="gap-2 grid grid-cols-2">
 
 				<SensorCard
 					title="🌡️ Temperature"
@@ -174,60 +133,28 @@ const SystemStatsCard = (props) => {
 };
 
 const SensorCard = (props) => {
-	const [show, setShow] = createSignal(false);
-	let modalRef;
-	let cardRef;
-
-	const popUpModal = () => {
-		setShow(true);
-		console.log("open");
-	};
-
-	onMount(() => {
-		document.addEventListener("click", (e) => {
-			console.log(cardRef?.contains(e.target) || e.target === cardRef);
-
-			if (cardRef?.contains(e.target) || e.target === cardRef)
-				return setShow(true);
-
-			return setShow(false);
-		});
-	});
-
 	const SensorChartPopup = () => {
 		
 		const getPrediction = async (sensor_id)=>{
 			return new Promise((resolve, _reject)=>{
 				useIO()?.on("predict_failure_result",(data)=>{
-					return resolve( data?.data?.probable.at(0) ? `${Number.parseFloat(data?.data?.probable.at(0)).toFixed(4)*100}` : "-")
+					// console.log(props.datasets)
+					console.log(data)
+					return resolve( data?.data?.probable.at(1) ? `${Number.parseFloat(data?.data?.probable.at(1)).toFixed(4)*100}` : "-")
 				})
 				useIO()?.on("predict_failure_error",()=>{
 					return resolve("-")
 				})
-				useIO()?.emit("sensor_predict_failure_rate", {id:sensor_id, values:props.datasets.reduce(i=>Number.parseFloat(i))})
+				// setTimeout(()=>	resolve("-"), 2500)
+				console.log(props.datasets)
+				useIO()?.emit("sensor_predict_failure_rate", {id:sensor_id, values:props.datasets})
 			})
 		}
 		const [failureRate, { refetch}] = createResource(getPrediction)
 
-		setInterval(()=>refetch(), 10000)
+		setInterval(()=>refetch(), 5000)
 
-
-		return <Card
-			ref={modalRef}
-			class="absolute backdrop:bg-opacity-35"
-			style={{
-				opacity: show() ? "1" : "0",
-				"z-index": show() ? "1" : "-1",
-				"user-select": show() ? "inherit" : "true",
-				height : '500px',
-				// width : '500px',	
-				right : "100px",
-				left : "100px",
-				width: "auto", 
-				top: show() ? "20px" : "0px",
-				transition: "all 500ms 1ms ease-in-out",
-			}}
-		>
+		return <Card class="h-[60%]">	
 			<CardTitle class="p-2 uppercase"> {props.title}</CardTitle>
 			<CardContent>
 				<LineChart
@@ -263,8 +190,8 @@ const SensorCard = (props) => {
 					}}
 				/>
 			</CardContent>
-			<CardDescription>
-				🔴 probability of failure {"(in next 10 readings...)"}: { failureRate.loading ? "loading.." : failureRate() } %
+			<CardDescription class='text-lg'>
+				{ failureRate() < 80 ? '🟢' : '🔴' } probability of failure {"(in next 10 readings...)"}: { failureRate.loading ? "loading.." : failureRate() } %
 				<br />
 			</CardDescription>
 		</Card>;
@@ -272,24 +199,18 @@ const SensorCard = (props) => {
 
 	return (
 		<Card
-			ref={cardRef}
-			class="p-2 hover:scale-105 transition-transform ease-in"
+			class="p-2 transition-transform ease-in"
 			style={{
 				"border-left":
 					props.status === "NORMAL" ? "rgba(0,220,0, 0.5) 5px solid" : "",
 			}}
-			onClick={() => popUpModal()}
 		>
-			<CardTitle class="">{props.title}</CardTitle>
 			<CardContent class="my-4 p-2 text-2xl">
-				{props.value} <span class="text-s">{props.unit}</span>
+				<SensorChartPopup/>
 			</CardContent>
 			<CardDescription class="text-xs">
 				Last updated at : {props.lastUpdate}{" "}
 			</CardDescription>
-			<Portal>
-				<SensorChartPopup/>
-			</Portal>
 		</Card>
 	);
 };
